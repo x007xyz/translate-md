@@ -1,0 +1,18 @@
+{
+  "name": "translate-md",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "marked": "^14.1.1",
+    "marked-ast-markdown": "^2.1.0",
+    "node-fetch": "^3.3.2"
+  }
+}
