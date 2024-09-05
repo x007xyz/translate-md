@@ -1,23 +1,38 @@
-const fs = require('fs').promises;
-const { translate } = require('./utils');
-const marked = require('marked');
+import { promises as fs } from 'fs';
+import { translate } from './utils.js';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkStringify from 'remark-stringify';
 
 // Volcano Engine Translation API 配置
 const ACCESS_KEY = process.env.VOLCANO_ACCESS_KEY;
 const SECRET_KEY = process.env.VOLCANO_SECRET_KEY;
 
-async function translateMarkdown(content, targetLanguage) {
-    const tokens = marked.lexer(content);
-    const translatedTokens = await Promise.all(tokens.map(async (token) => {
-        if (token.type === 'paragraph' || token.type === 'text') {
-            token.text = await translate(token.text, targetLanguage, {
-                accessKeyId: ACCESS_KEY,
-                secretAccessKey: SECRET_KEY
-            });
+async function translateNode(node, targetLanguage) {
+    if (node.type === 'text') {
+        node.value = await translate(node.value, targetLanguage, {
+            accessKeyId: ACCESS_KEY,
+            secretAccessKey: SECRET_KEY
+        });
+    } else if (node.children) {
+        for (let child of node.children) {
+            await translateNode(child, targetLanguage);
         }
-        return token;
-    }));
-    return marked.parser(translatedTokens);
+    }
+}
+
+async function translateMarkdown(content, targetLanguage) {
+    const processor = unified()
+        .use(remarkParse)
+        .use(remarkStringify);
+
+    const tree = processor.parse(content);
+
+    for (let node of tree.children) {
+        await translateNode(node, targetLanguage);
+    }
+
+    return processor.stringify(tree);
 }
 
 async function translateFile(sourcePath, targetPath, targetLanguage) {
