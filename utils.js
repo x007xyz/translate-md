@@ -12,15 +12,14 @@ const debuglog = util.debuglog('signer');
 const HEADER_KEYS_TO_IGNORE = new Set(['authorization', 'content-type', 'content-length', 'user-agent', 'presigned-expires', 'expect'])
 
 // do request example
-async function translate(text, targetLanguage, { accessKeyId, secretAccessKey }) {
-  console.log(text, targetLanguage)
+async function translate(textList, targetLanguage, { accessKeyId, secretAccessKey }) {
+  console.log(textList, targetLanguage)
   const body = {
-    TextList: [text],
+    TextList: textList,
     TargetLanguage: targetLanguage,
   }
   const signParams = {
     headers: {
-      // x-date header 是必传的
       ['X-Date']: getDateTimeNow(),
     },
     method: 'POST',
@@ -34,7 +33,6 @@ async function translate(text, targetLanguage, { accessKeyId, secretAccessKey })
     region: 'cn-north-1',
     bodySha: getBodySha(JSON.stringify(body)),
   }
-  // 正规化 query object， 防止串化后出现 query 值为 undefined 情况
   for (const [key, val] of Object.entries(signParams.query)) {
     if (val === undefined || val === null) {
       signParams.query[key] = ''
@@ -49,9 +47,8 @@ async function translate(text, targetLanguage, { accessKeyId, secretAccessKey })
     method: signParams.method,
     data: body,
   })
-  // const responseText = await res.json();
   console.log(res.data)
-  return res.data.TranslationList[0].Translation
+  return res.data.TranslationList.map(item => item.Translation)
 }
 
 function sign(params) {

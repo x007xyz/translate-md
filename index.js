@@ -8,28 +8,44 @@ import remarkStringify from 'remark-stringify';
 const ACCESS_KEY = process.env.VOLCANO_ACCESS_KEY;
 const SECRET_KEY = process.env.VOLCANO_SECRET_KEY;
 
-async function translateNode(node, targetLanguage) {
-    if (node.type === 'text') {
-        node.value = await translate(node.value, targetLanguage, {
-            accessKeyId: ACCESS_KEY,
-            secretAccessKey: SECRET_KEY
-        });
-    } else if (node.children) {
-        for (let child of node.children) {
-            await translateNode(child, targetLanguage);
-        }
-    }
-}
-
 async function translateMarkdown(content, targetLanguage) {
     const processor = unified()
         .use(remarkParse)
         .use(remarkStringify);
 
     const tree = processor.parse(content);
+    const textNodes = [];
+    const nodeMap = new Map();
+
+    function collectTextNodes(node) {
+        if (node.type === 'text') {
+            textNodes.push(node.value);
+            nodeMap.set(node.value, node);
+        }
+        if (node.children) {
+            for (let child of node.children) {
+                collectTextNodes(child);
+            }
+        }
+    }
 
     for (let node of tree.children) {
-        await translateNode(node, targetLanguage);
+        collectTextNodes(node);
+    }
+
+    if (textNodes.length > 0) {
+        const translations = await translate(textNodes, targetLanguage, {
+            accessKeyId: ACCESS_KEY,
+            secretAccessKey: SECRET_KEY
+        });
+
+        translations.forEach((translation, index) => {
+            const originalText = textNodes[index];
+            const node = nodeMap.get(originalText);
+            if (node) {
+                node.value = translation;
+            }
+        });
     }
 
     return processor.stringify(tree);

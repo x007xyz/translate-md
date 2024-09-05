@@ -1,15 +1,12 @@
-# fly-cut
+# Markdown 翻译工具
 
-## 简介
-基于Webcodecs + Vue3实现的Web端剪辑工具 <br/>
-如果有用请 🌟 Star 🌟 支持一下哟 🫣 <br/>
+## 项目概述
 
-## 功能
-![](coverImage/map.png)
+这是一个基于 Node.js 的 Markdown 文件翻译工具。它使用 Volcano Engine Translation API 来翻译 Markdown 文件的内容，同时保持原有的 Markdown 格式。该工具支持批量翻译文本，提高了翻译效率。
 
-## 预览
-![](coverImage/preview.gif)
+## 功能特点
 
-## 参考
-- https://github.com/hughfenghen/WebAV 基于 WebCodecs 在浏览器中处理音视频数据；用来处理音视频文件
-- https://github.com/Cc-Edit/CcClip 使用Vue3 + ffmpeg实现的Web剪辑工具，本项目主题功能基于本项目开发
+- 保持原有 Markdown 格式
+- 批量翻译文本，减少 API 调用次数
+- 支持自定义目标语言
+- 使用 ESM (ECMAScript 模块) 格式
